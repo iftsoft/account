@@ -1,0 +1,19 @@
+
+curl -v -X POST "http://localhost:8080/api/account/list"
+curl -v -X GET  "http://localhost:8080/api/account/list"
+
+curl -v -X POST "http://localhost:8080/api/account/item" -d '{"account":"test1"}'
+curl -v -X GET  "http://localhost:8080/api/account/item/?account=test1"
+
+curl -v -X POST "http://localhost:8080/api/account/open" -d '{"account":"test1","owner":"John Smith","currency":"USD"}'
+
+curl -v -X POST "http://localhost:8080/api/account/close" -d '{"account":"test1"}'
+
+curl -v -X POST "http://localhost:8080/api/account/delete" -d '{"account":"test1"}'
+curl -v -X DELETE "http://localhost:8080/api/account/delete/?account=test1"
+
+curl -v -X POST "http://localhost:8080/api/account/deposit" -d '{"account":"test1","currency":"USD","amount":100.0}'
+
+curl -v -X POST "http://localhost:8080/api/account/withdraw" -d '{"account":"test1","currency":"USD","amount":10.0}'
+
+curl -v -X POST "http://localhost:8080/api/account/transfer" -d '{"account":"test1","target":"test2","currency":"USD","amount":50.0}'

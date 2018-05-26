@@ -43,10 +43,11 @@ func (this *rootHandler)ServeHTTP(w http.ResponseWriter, r *http.Request){
 
 	list := strings.Split(r.URL.Path, "/")
 	if len(list) > 2 {
-		if list[0] != hnd_BaseAPI {
+		if list[1] != hnd_BaseAPI {
 			http.Error(w, "Bad request", http.StatusBadRequest )
+			return
 		}
-		switch list[1] {
+		switch list[2] {
 		case hnd_AccuntAPI :
 			hnd := getAccountApiHandler()
 			hnd.ServeHTTP(w, r)

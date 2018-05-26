@@ -5,7 +5,7 @@ import "time"
 // Enumeration of account state
 const (
 	State_Active    int = iota
-	State_Blocked
+	State_Closed
 )
 // Account object declaration
 type Account struct {
@@ -29,3 +29,11 @@ type AccountKeeper interface {
 	GetAccountList() AccountList				// Get all accounts from the storage
 }
 
+// Placeholder for query params
+type QueryParams struct {
+	Account		*string		`json:"account"`	// Active account name
+	Owner		*string		`json:"owner"`		// Name of account owner
+	Currency	*string		`json:"currency"`	// Currency ISO code
+	Amount		*float32	`json:"amount"`		// Transaction amount
+	Target		*string		`json:"target"`		// Transfer to account
+}
