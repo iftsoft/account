@@ -6,6 +6,13 @@ import (
 	"fmt"
 )
 
+const (
+	hnd_BaseAPI			= "api"
+	hnd_AccuntAPI		= "account"
+	hnd_OperationAPI	= "operaton"
+	hnd_TransactionAPI	= "transaction"
+)
+
 func ApiHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Get root handler of API
@@ -16,8 +23,9 @@ func ApiHandler() http.Handler {
 }
 
 ///////////////////////////////////////////////////////////////////////
-
+// Root API handler
 type rootHandler struct {
+	baseHandler			// Common functions inheritance
 }
 
 func rootPanicRecover(w http.ResponseWriter) {
@@ -28,23 +36,20 @@ func rootPanicRecover(w http.ResponseWriter) {
 	}
 }
 
+// Serve HTTP request
 func (this *rootHandler)ServeHTTP(w http.ResponseWriter, r *http.Request){
 	defer rootPanicRecover(w)
-	fmt.Printf("Request - %s:%s", r.Method, r.URL.Path)
-	//	keeper := store.GetAccountKeeper()
+	fmt.Printf("Request - %s:%s\n", r.Method, r.URL.Path)
 
 	list := strings.Split(r.URL.Path, "/")
 	if len(list) > 2 {
+		if list[0] != hnd_BaseAPI {
+			http.Error(w, "Bad request", http.StatusBadRequest )
+		}
 		switch list[1] {
-		//case hnd_ObjectAPI, hnd_ManagerAPI :
-		//	hnd := GetAuthHandler(this.store)
-		//	hnd.ServeHTTP(w, r)
-		//case hnd_TicketAPI :
-		//	hnd := getTicketApiHandler(this.store)
-		//	hnd.ServeHTTP(w, r)
-		//case hnd_SecureAPI :
-		//	hnd := getSecureApiHandler(this.store)
-		//	hnd.ServeHTTP(w, r)
+		case hnd_AccuntAPI :
+			hnd := getAccountApiHandler()
+			hnd.ServeHTTP(w, r)
 		default:
 			http.Error(w, "Bad request", http.StatusBadRequest )
 		}

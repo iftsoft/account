@@ -9,20 +9,16 @@ import (
 
 func main() {
 	fmt.Println("-------BEGIN----------")
-	RunService()
-	fmt.Println("-------END------------")
-}
-
-
-func RunService() error {
-	// Register default HTTP handler
+	// Register default HTTP handlers
 	//http.Handle("/", GuiHandler())
 	//http.Handle("/gui/", GuiHandler())
 	//http.Handle("/static/", ImgHandler())
 	//http.Handle("/favicon.ico", ImgHandler())
 	http.Handle("/api/", handler.ApiHandler())
 	// Run HTTP(S) listener
-	return server.Run(8080)
+	server.Run(8080)
+
+	fmt.Println("-------END------------")
 }
 
 
