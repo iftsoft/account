@@ -2,6 +2,8 @@ GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
+GORUN=$(GOCMD) run
+GOFILE_NAME=main.go
 BINARY_NAME=account
 
 all: build
@@ -13,5 +15,4 @@ clean:
 	$(GOCLEAN)
 	rm -f $(BINARY_NAME)
 run:
-	$(GOBUILD) -o $(BINARY_NAME) -v ./...
-	./$(BINARY_NAME)
+	$(GORUN) $(GOFILE_NAME)
