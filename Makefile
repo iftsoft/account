@@ -2,7 +2,6 @@ GOCMD=go
 GOBUILD=$(GOCMD) build
 GOCLEAN=$(GOCMD) clean
 GOTEST=$(GOCMD) test
-GOGET=$(GOCMD) get
 BINARY_NAME=account
 
 all: build
@@ -16,5 +15,3 @@ clean:
 run:
 	$(GOBUILD) -o $(BINARY_NAME) -v ./...
 	./$(BINARY_NAME)
-#deps:
-#	$(GOGET) github.com/markbates/goth
