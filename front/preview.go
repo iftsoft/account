@@ -40,16 +40,9 @@ func (this *guiPreviewHandler)ServeHTTP(w http.ResponseWriter, r *http.Request){
 }
 
 var previewContentTpl = `{{define "content"}}
-{{template "preview" .Account}}` +
-	GetButton("Accounts list", "gotoAccountList();", "btn-success") +
-	GetButton("Close", "closeAccount();", "btn-warning") +
-	GetButton("Delete", "deleteAccount();", "btn-danger") +
-`<br><hr><br>
-{{template "transact" .Account}}` +
-	GetButton("Deposit", "transDeposit();", "btn-primary") +
-	GetButton("Withdraw", "transWithdraw();", "btn-primary") +
-	GetButton("Transfer", "transTransfer();", "btn-primary") +
-`{{end}}`
+{{template "preview" .Account}}<br>
+{{template "transact" .Account}}
+{{end}}`
 
 var previewFormTpl = `{{define "preview"}}
 <div class="panel panel-primary">
@@ -64,11 +57,16 @@ var previewFormTpl = `{{define "preview"}}
 	GetStatic("Created", "Account created") +
 	GetStatic("Updated", "Account updated") +
 `</form></div>
+<div class="panel-footer">` +
+	GetButton("Accounts list", "gotoAccountList();", "btn-success") +
+	GetButton("Close", "closeAccount();", "btn-warning") +
+	GetButton("Delete", "deleteAccount();", "btn-danger") +
+`</div>
 </div> 
 {{end}}`
 
 var previewWorkTpl = `{{define "transact"}}
-<div class="panel panel-info">
+<div class="panel panel-primary">
   <div class="panel-heading">Transaction property</div>
   <div class="panel-body">
 <form class="form">` +
@@ -76,6 +74,11 @@ var previewWorkTpl = `{{define "transact"}}
 	GetInput("amount", "Transaction amount") +
 	GetInput("target", "Target account") +
 `</form></div>
+<div class="panel-footer">` +
+	GetButton("Deposit", "transDeposit();", "btn-info") +
+	GetButton("Withdraw", "transWithdraw();", "btn-info") +
+	GetButton("Transfer", "transTransfer();", "btn-info") +
+`</div>
 </div> 
 {{end}}`
 

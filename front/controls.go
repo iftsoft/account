@@ -2,7 +2,7 @@ package front
 
 // Get button html string
 func GetButton(text, click, class string) string{
-	str := 	`<nbsp><button class="btn ` + class + `" onclick="` + click + `">` + text + `</button>`
+	str := 	`<button class="btn ` + class + `" onclick="` + click + `">` + text + `</button>`
 	return str
 }
 
