@@ -24,3 +24,26 @@ ADDITIONAL REQUIREMENTS:
 * accounts must have a currency
 * transaction and account currency must be same
 
+
+SOLUTION
+
+Application contains several packages:
+* model   - domain objects definition
+* store   - in-memory storage for accounts
+* domain  - business logic manager
+* handler - dispatcher of API http requests
+* front   - dispatcher of GUI http requests
+* server  - http port listener
+
+
+BUILDING
+
+Use IDE or Makefile to build application
+
+
+API TESTING
+
+Use curl commands from test_curl.txt file
+Or use Web interface on http://localhost:8080/
+
+
