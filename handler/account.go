@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
+	"account/domain"
 )
 
 const (
@@ -88,7 +89,11 @@ func (this *hndAccountAPI)ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // Return list of all accounts in storage
 func (this *hndAccountAPI)cmdAccountGetList(w http.ResponseWriter, r *http.Request) (err error) {
 	// Get Account list from storage
-	list := this.keeper.GetAccountList()
+	mngr := domain.GetAccountManager()
+	list, err := mngr.GetAccountList()
+	if err != nil {
+		return this.WriteError(w, err.Error(), http.StatusNotFound )
+	}
 	// Write command response
 	err = this.WriteJsonReply(w, list)
 	return err
@@ -102,10 +107,11 @@ func (this *hndAccountAPI)cmdAccountGetItem(w http.ResponseWriter, r *http.Reque
 	if err != nil {	return err	}
 	// Check Account name
 	if input.Account == nil || len(*input.Account) < 4 {
-		return this.WriteError(w, "Account name is incorrect", http.StatusExpectationFailed)
+		return this.WriteError(w, "Account name is incorrect", http.StatusNotAcceptable)
 	}
-	// Get Account from store
-	item, err := this.keeper.GetAccount(*input.Account)
+	// Get Account from storage
+	mngr := domain.GetAccountManager()
+	item, err := mngr.GetAccount(*input.Account)
 	if err != nil {
 		return this.WriteError(w, err.Error(), http.StatusNotFound )
 	}
@@ -122,34 +128,26 @@ func (this *hndAccountAPI)cmdAccountOpen(w http.ResponseWriter, r *http.Request)
 	if err != nil {	return err	}
 	// Check Account name
 	if input.Account == nil || len(*input.Account) < 4 {
-		return this.WriteError(w, "Account name is incorrect", http.StatusExpectationFailed)
+		return this.WriteError(w, "Account name is incorrect", http.StatusNotAcceptable)
 	}
 	// Check Account currency
 	if input.Currency == nil || len(*input.Currency) != 3 {
-		return this.WriteError(w, "Account currency is incorrect", http.StatusExpectationFailed)
+		return this.WriteError(w, "Account currency is incorrect", http.StatusNotAcceptable)
 	}
 	// Check Account owner
 	if input.Owner == nil || *input.Owner == "" {
-		return this.WriteError(w, "Account owner is not set", http.StatusExpectationFailed)
+		return this.WriteError(w, "Account owner is not set", http.StatusNotAcceptable)
 	}
 	// Check Account currency
 	if input.Currency == nil || len(*input.Currency) != 3 {
-		return this.WriteError(w, "Account currency is incorrect", http.StatusExpectationFailed)
+		return this.WriteError(w, "Account currency is incorrect", http.StatusNotAcceptable)
 	}
-	// Create new account
-	item := &model.Account{}
-	item.Name		= *input.Account
-	item.State		= model.State_Active
-	item.Owner		= *input.Owner
-	item.Currency	= *input.Currency
-	item.Amount		= 0.0
-	item.Updated	= time.Now()
-	item.Created	= item.Updated
 
-	// Insert Account into store
-	err = this.keeper.InsertAccount(item)
+	// Open new Account into store
+	mngr := domain.GetAccountManager()
+	item, err := mngr.OpenAccount(*input.Account, *input.Owner, *input.Currency)
 	if err != nil {
-		return this.WriteError(w, err.Error(), http.StatusNotFound )
+		return this.WriteError(w, err.Error(), http.StatusConflict )
 	}
 	// Write command response
 	err = this.WriteJsonReply(w, item)
@@ -164,24 +162,14 @@ func (this *hndAccountAPI)cmdAccountClose(w http.ResponseWriter, r *http.Request
 	if err != nil {	return err	}
 	// Check Account name
 	if input.Account == nil || len(*input.Account) < 4 {
-		return this.WriteError(w, "Account name is incorrect", http.StatusExpectationFailed)
+		return this.WriteError(w, "Account name is incorrect", http.StatusNotAcceptable)
 	}
-	// Get Account from store
-	item, err := this.keeper.GetAccount(*input.Account)
+
+	// Close account in the storage
+	mngr := domain.GetAccountManager()
+	item, err := mngr.CloseAccount(*input.Account)
 	if err != nil {
-		return this.WriteError(w, err.Error(), http.StatusNotFound )
-	}
-	// Check for account emptiness
-	if item.Amount > 0.0 {
-		return this.WriteError(w, "Account is not empty", http.StatusExpectationFailed)
-	}
-	// Change account state
-	item.State = model.State_Closed
-	item.Updated	= time.Now()
-	// Save changed Account into store
-	err = this.keeper.UpdateAccount(item)
-	if err != nil {
-		return this.WriteError(w, err.Error(), http.StatusNotFound )
+		return this.WriteError(w, err.Error(), http.StatusConflict )
 	}
 	// Write command response
 	err = this.WriteJsonReply(w, item)
@@ -196,29 +184,21 @@ func (this *hndAccountAPI)cmdAccountDelete(w http.ResponseWriter, r *http.Reques
 	if err != nil {	return err	}
 	// Check Account name
 	if input.Account == nil || len(*input.Account) < 4 {
-		return this.WriteError(w, "Account name is incorrect", http.StatusExpectationFailed)
+		return this.WriteError(w, "Account name is incorrect", http.StatusNotAcceptable)
 	}
-	// Get Account from store
-	item, err := this.keeper.GetAccount(*input.Account)
+
+	// Delete Account in the storage
+	mngr := domain.GetAccountManager()
+	item, err := mngr.DeleteAccount(*input.Account)
 	if err != nil {
-		return this.WriteError(w, err.Error(), http.StatusNotFound )
-	}
-	// Check for account is closed
-	if item.State != model.State_Closed {
-		return this.WriteError(w, "Account is not closed", http.StatusExpectationFailed)
-	}
-	// Delete Account in store
-	err = this.keeper.DeleteAccount(*input.Account)
-	if err != nil {
-		return this.WriteError(w, err.Error(), http.StatusNotFound )
-		return err
+		return this.WriteError(w, err.Error(), http.StatusConflict )
 	}
 	// Write command response
 	err = this.WriteJsonReply(w, item)
 	return err
 }
 
-// Deposit founds to account amount
+// Deposit funds to account amount
 func (this *hndAccountAPI)cmdAccountDeposit(w http.ResponseWriter, r *http.Request) (err error) {
 	// Read query params
 	input := &model.QueryParams{}
@@ -226,45 +206,29 @@ func (this *hndAccountAPI)cmdAccountDeposit(w http.ResponseWriter, r *http.Reque
 	if err != nil {	return err	}
 	// Check Account name
 	if input.Account == nil || len(*input.Account) < 4 {
-		return this.WriteError(w, "Account name is incorrect", http.StatusExpectationFailed)
+		return this.WriteError(w, "Account name is incorrect", http.StatusNotAcceptable)
 	}
 	// Check Transaction currency
 	if input.Currency == nil || len(*input.Currency) != 3 {
-		return this.WriteError(w, "Transaction currency is incorrect", http.StatusExpectationFailed)
+		return this.WriteError(w, "Transaction currency is incorrect", http.StatusNotAcceptable)
 	}
 	// Check Transaction amount
 	if input.Amount == nil || *input.Amount <= 0.0 {
-		return this.WriteError(w, "Transaction amount is incorrect", http.StatusExpectationFailed)
+		return this.WriteError(w, "Transaction amount is incorrect", http.StatusNotAcceptable)
 	}
 
-	// Get Account from store
-	item, err := this.keeper.GetAccount(*input.Account)
+	// Deposit fund from store
+	mngr := domain.GetAccountManager()
+	item, err := mngr.DepositFund(*input.Account, *input.Currency, *input.Amount)
 	if err != nil {
-		return this.WriteError(w, err.Error(), http.StatusNotFound )
-	}
-	// Check for account is closed
-	if item.State == model.State_Closed {
-		return this.WriteError(w, "Account is closed", http.StatusExpectationFailed)
-	}
-	// Check for account currency
-	if item.Currency != *input.Currency {
-		return this.WriteError(w, "Account and Transaction currency mismatch", http.StatusExpectationFailed)
-	}
-
-	// Change account amount
-	item.Amount += *input.Amount
-	item.Updated	= time.Now()
-	// Save changed Account into store
-	err = this.keeper.UpdateAccount(item)
-	if err != nil {
-		return this.WriteError(w, err.Error(), http.StatusNotFound )
+		return this.WriteError(w, err.Error(), http.StatusConflict )
 	}
 	// Write command response
 	err = this.WriteJsonReply(w, item)
 	return err
 }
 
-// Withdraw founds from account amount
+// Withdraw funds from account amount
 func (this *hndAccountAPI)cmdAccountWithdraw(w http.ResponseWriter, r *http.Request) (err error) {
 	// Read query params
 	input := &model.QueryParams{}
@@ -272,42 +236,22 @@ func (this *hndAccountAPI)cmdAccountWithdraw(w http.ResponseWriter, r *http.Requ
 	if err != nil {	return err	}
 	// Check Account name
 	if input.Account == nil || len(*input.Account) < 4 {
-		return this.WriteError(w, "Account name is incorrect", http.StatusExpectationFailed)
+		return this.WriteError(w, "Account name is incorrect", http.StatusNotAcceptable)
 	}
 	// Check Transaction currency
 	if input.Currency == nil || len(*input.Currency) != 3 {
-		return this.WriteError(w, "Transaction currency is incorrect", http.StatusExpectationFailed)
+		return this.WriteError(w, "Transaction currency is incorrect", http.StatusNotAcceptable)
 	}
 	// Check Transaction amount
 	if input.Amount == nil || *input.Amount <= 0.0 {
-		return this.WriteError(w, "Transaction amount is incorrect", http.StatusExpectationFailed)
+		return this.WriteError(w, "Transaction amount is incorrect", http.StatusNotAcceptable)
 	}
 
-	// Get Account from store
-	item, err := this.keeper.GetAccount(*input.Account)
+	// Withdraw fund from store
+	mngr := domain.GetAccountManager()
+	item, err := mngr.WithdrawFund(*input.Account, *input.Currency, *input.Amount)
 	if err != nil {
-		return this.WriteError(w, err.Error(), http.StatusNotFound )
-	}
-	// Check for account is closed
-	if item.State == model.State_Closed {
-		return this.WriteError(w, "Account is closed", http.StatusExpectationFailed)
-	}
-	// Check for account currency
-	if item.Currency != *input.Currency {
-		return this.WriteError(w, "Account and Transaction currency mismatch", http.StatusExpectationFailed)
-	}
-	// Check for account balance
-	if item.Amount < *input.Amount {
-		return this.WriteError(w, "Transaction amount is too big", http.StatusExpectationFailed)
-	}
-
-	// Change account amount
-	item.Amount -= *input.Amount
-	item.Updated	= time.Now()
-	// Save changed Account into store
-	err = this.keeper.UpdateAccount(item)
-	if err != nil {
-		return this.WriteError(w, err.Error(), http.StatusNotFound )
+		return this.WriteError(w, err.Error(), http.StatusConflict )
 	}
 	// Write command response
 	err = this.WriteJsonReply(w, item)
@@ -322,69 +266,29 @@ func (this *hndAccountAPI)cmdAccountTransfer(w http.ResponseWriter, r *http.Requ
 	if err != nil {	return err	}
 	// Check source Account name
 	if input.Account == nil || len(*input.Account) < 4 {
-		return this.WriteError(w, "Source account name is incorrect", http.StatusExpectationFailed)
+		return this.WriteError(w, "Source account name is incorrect", http.StatusNotAcceptable)
 	}
 	// Check target Account name
 	if input.Target == nil || len(*input.Target) < 4 {
-		return this.WriteError(w, "Target account name is incorrect", http.StatusExpectationFailed)
+		return this.WriteError(w, "Target account name is incorrect", http.StatusNotAcceptable)
 	}
 	// Check Transaction currency
 	if input.Currency == nil || len(*input.Currency) != 3 {
-		return this.WriteError(w, "Transaction currency is incorrect", http.StatusExpectationFailed)
+		return this.WriteError(w, "Transaction currency is incorrect", http.StatusNotAcceptable)
 	}
 	// Check Transaction amount
 	if input.Amount == nil || *input.Amount <= 0.0 {
-		return this.WriteError(w, "Transaction amount is incorrect", http.StatusExpectationFailed)
+		return this.WriteError(w, "Transaction amount is incorrect", http.StatusNotAcceptable)
 	}
 
-	// Get source Account from store
-	item1, err := this.keeper.GetAccount(*input.Account)
+	// Withdraw fund from store
+	mngr := domain.GetAccountManager()
+	item, err := mngr.TransferFund(*input.Account, *input.Target, *input.Currency, *input.Amount)
 	if err != nil {
-		return this.WriteError(w, err.Error(), http.StatusNotFound )
-	}
-	// Check for account is closed
-	if item1.State == model.State_Closed {
-		return this.WriteError(w, "Source Account is closed", http.StatusExpectationFailed)
-	}
-	// Check for account currency
-	if item1.Currency != *input.Currency {
-		return this.WriteError(w, "Account and Transaction currency mismatch", http.StatusExpectationFailed)
-	}
-	// Check for account balance
-	if item1.Amount < *input.Amount {
-		return this.WriteError(w, "Transaction amount is too big", http.StatusExpectationFailed)
-	}
-
-	// Get target Account from store
-	item2, err := this.keeper.GetAccount(*input.Target)
-	if err != nil {
-		return this.WriteError(w, err.Error(), http.StatusNotFound )
-	}
-	// Check for account is closed
-	if item2.State == model.State_Closed {
-		return this.WriteError(w, "Target Account is closed", http.StatusExpectationFailed)
-	}
-	// Check for account currency
-	if item2.Currency != *input.Currency {
-		return this.WriteError(w, "Account and Transaction currency mismatch", http.StatusExpectationFailed)
-	}
-
-	// Change account amount
-	item1.Amount -= *input.Amount
-	item1.Updated	= time.Now()
-	item2.Amount += *input.Amount
-	item2.Updated	= time.Now()
-	// Save changed Accounts into store
-	err = this.keeper.UpdateAccount(item1)
-	if err != nil {
-		return this.WriteError(w, err.Error(), http.StatusNotFound )
-	}
-	err = this.keeper.UpdateAccount(item2)
-	if err != nil {
-		return this.WriteError(w, err.Error(), http.StatusNotFound )
+		return this.WriteError(w, err.Error(), http.StatusConflict )
 	}
 	// Write command response
-	err = this.WriteJsonReply(w, item1)
+	err = this.WriteJsonReply(w, item)
 	return err
 }
 

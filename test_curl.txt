@@ -3,9 +3,10 @@ curl -v -X POST "http://localhost:8080/api/account/list"
 curl -v -X GET  "http://localhost:8080/api/account/list"
 
 curl -v -X POST "http://localhost:8080/api/account/item" -d '{"account":"test1"}'
-curl -v -X GET  "http://localhost:8080/api/account/item/?account=test1"
+curl -v -X GET  "http://localhost:8080/api/account/item/?account=test2"
 
 curl -v -X POST "http://localhost:8080/api/account/open" -d '{"account":"test1","owner":"John Smith","currency":"USD"}'
+curl -v -X POST "http://localhost:8080/api/account/open" -d '{"account":"test2","owner":"John Smith","currency":"USD"}'
 
 curl -v -X POST "http://localhost:8080/api/account/close" -d '{"account":"test1"}'
 
