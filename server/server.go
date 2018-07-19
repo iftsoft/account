@@ -11,7 +11,7 @@ import (
 )
 
 func Run(port int) error {
-	netSpec := fmt.Sprintf("localhost:%d", port)
+	netSpec := fmt.Sprintf("0.0.0.0:%d", port)
 	fmt.Printf("Starting, HTTP on: %s\n", netSpec)
 	// Create network listener
 	listener, err := net.Listen("tcp", netSpec)
