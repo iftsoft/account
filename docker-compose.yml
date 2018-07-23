@@ -1,0 +1,21 @@
+account1:
+    image: account
+    container_name: account1
+    ports:
+        - 8081:8080
+
+account2:
+    image: account
+    container_name: account2
+    ports:
+        - 8082:8080
+
+accnginx:
+    image: accnginx
+    container_name: accnginx
+    ports:
+        - 80:80
+    restart: always
+    links:
+        - account1
+        - account2
