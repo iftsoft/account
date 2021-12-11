@@ -1,8 +1,8 @@
 package front
 
 import (
-	"net/http"
 	"account/store"
+	"net/http"
 )
 
 // Interface to Account list handler
@@ -17,14 +17,14 @@ type guiAccListHandler struct {
 }
 
 // Account list handler executor
-func (this *guiAccListHandler)ServeHTTP(w http.ResponseWriter, r *http.Request){
+func (this *guiAccListHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Get account list from store
 	keeper := store.GetAccountKeeper()
 	list := keeper.GetAccountList()
 	// Prepare template data
 	this.data = make(map[string]interface{})
-	this.data["lines"]	= list
-	this.tpls = []string { baseFrameTpl, listContentTpl, listScriptTpl }
+	this.data["lines"] = list
+	this.tpls = []string{baseFrameTpl, listContentTpl, listScriptTpl}
 	this.execTemplates(w)
 }
 
@@ -37,7 +37,7 @@ var listContentTpl = `{{define "content"}}
 </table>
 <p>Click on account row or create new account</p>` +
 	GetButton("Create New Account", "gotoCreateAccount();", "btn-warning") +
-`{{end}}`
+	`{{end}}`
 
 var listScriptTpl = `{{define "scripts"}}
 <script type="text/javascript">
@@ -50,5 +50,3 @@ function gotoCreateAccount() {
 }
 </script>
 {{end}}`
-
-

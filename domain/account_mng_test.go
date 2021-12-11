@@ -1,14 +1,14 @@
 package domain
 
 import (
-	"testing"
-	"account/store"
 	"account/model"
+	"account/store"
+	"testing"
 	"time"
 )
 
 func TestGetAccount(t *testing.T) {
-	account := &model.Account{ Name:"Key_1", Owner:"Owner 1", Currency:"USD", Amount:25.0, State:0, Created:time.Now(), Updated:time.Now()}
+	account := &model.Account{Name: "Key_1", Owner: "Owner 1", Currency: "USD", Amount: 25.0, State: 0, Created: time.Now(), Updated: time.Now()}
 	keeper := store.GetAccountKeeper()
 	mngr := GetAccountManager()
 

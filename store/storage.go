@@ -1,15 +1,15 @@
 package store
 
 import (
-	"sync"
 	"account/model"
 	"errors"
+	"sync"
 )
 
 // Error strings
 const (
-	errAccountIsExist	= "Account is already exist"
-	errAccountNotExist	= "Account is not exist"
+	errAccountIsExist  = "Account is already exist"
+	errAccountNotExist = "Account is not exist"
 )
 
 // Return interface to account storage
@@ -18,17 +18,17 @@ func GetAccountKeeper() model.AccountKeeper {
 }
 
 // Singleton instance of account storage
-var storage = accountStorage { items: make(map[string]*model.Account), }
+var storage = accountStorage{items: make(map[string]*model.Account)}
 
 // Account storage definition
 type accountStorage struct {
-	sync.RWMutex	// For access synchronization
-	items		map[string]*model.Account	// Account name is a map key
+	sync.RWMutex                           // For access synchronization
+	items        map[string]*model.Account // Account name is a map key
 }
 
 // Put new account to the storage
-func (this *accountStorage)InsertAccount(item *model.Account) error {
-	this.Lock()		// Lock storage for write
+func (this *accountStorage) InsertAccount(item *model.Account) error {
+	this.Lock() // Lock storage for write
 	defer this.Unlock()
 
 	// Check storage for account name
@@ -43,8 +43,8 @@ func (this *accountStorage)InsertAccount(item *model.Account) error {
 }
 
 // Set new account data by account name
-func (this *accountStorage)UpdateAccount(item *model.Account) error {
-	this.Lock()		// Lock storage for write
+func (this *accountStorage) UpdateAccount(item *model.Account) error {
+	this.Lock() // Lock storage for write
 	defer this.Unlock()
 
 	// Check storage for account name
@@ -59,8 +59,8 @@ func (this *accountStorage)UpdateAccount(item *model.Account) error {
 }
 
 // Remove account from the storage by name
-func (this *accountStorage)DeleteAccount(name string) error {
-	this.Lock()		// Lock storage for write
+func (this *accountStorage) DeleteAccount(name string) error {
+	this.Lock() // Lock storage for write
 	defer this.Unlock()
 
 	// Check storage for account name
@@ -75,8 +75,8 @@ func (this *accountStorage)DeleteAccount(name string) error {
 }
 
 // Get account from the storage by name
-func (this *accountStorage)GetAccount(name string) (item *model.Account, err error) {
-	this.RLock()		// Lock storage for read
+func (this *accountStorage) GetAccount(name string) (item *model.Account, err error) {
+	this.RLock() // Lock storage for read
 	defer this.RUnlock()
 
 	// Check storage for account name
@@ -90,8 +90,8 @@ func (this *accountStorage)GetAccount(name string) (item *model.Account, err err
 }
 
 // Get all accounts from the storage
-func (this *accountStorage)GetAccountList() model.AccountList {
-	this.RLock()		// Lock storage for read
+func (this *accountStorage) GetAccountList() model.AccountList {
+	this.RLock() // Lock storage for read
 	defer this.RUnlock()
 
 	// Init empty account list
@@ -103,5 +103,3 @@ func (this *accountStorage)GetAccountList() model.AccountList {
 	}
 	return list
 }
-
-

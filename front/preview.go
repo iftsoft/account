@@ -1,8 +1,8 @@
 package front
 
 import (
-	"net/http"
 	"account/store"
+	"net/http"
 )
 
 // Interface to Preview handler
@@ -17,7 +17,7 @@ type guiPreviewHandler struct {
 }
 
 // Preview handler executor
-func (this *guiPreviewHandler)ServeHTTP(w http.ResponseWriter, r *http.Request){
+func (this *guiPreviewHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Find account name
 	qry := r.URL.Query()
 	keys, ok := qry["account"]
@@ -34,8 +34,8 @@ func (this *guiPreviewHandler)ServeHTTP(w http.ResponseWriter, r *http.Request){
 	}
 	// Prepare template data
 	this.data = make(map[string]interface{})
-	this.data["Account"]	= item
-	this.tpls = []string { baseFrameTpl, previewContentTpl, previewScriptTpl, previewFormTpl, previewWorkTpl }
+	this.data["Account"] = item
+	this.tpls = []string{baseFrameTpl, previewContentTpl, previewScriptTpl, previewFormTpl, previewWorkTpl}
 	this.execTemplates(w)
 }
 
@@ -56,12 +56,12 @@ var previewFormTpl = `{{define "preview"}}
 	GetStatic("Amount", "Account amount") +
 	GetStatic("Created", "Account created") +
 	GetStatic("Updated", "Account updated") +
-`</form></div>
+	`</form></div>
 <div class="panel-footer">` +
 	GetButton("Accounts list", "gotoAccountList();", "btn-success") +
 	GetButton("Close", "closeAccount();", "btn-warning") +
 	GetButton("Delete", "deleteAccount();", "btn-danger") +
-`</div>
+	`</div>
 </div> 
 {{end}}`
 
@@ -73,12 +73,12 @@ var previewWorkTpl = `{{define "transact"}}
 	GetCurrency("currency", "Transaction currency") +
 	GetInput("amount", "Transaction amount") +
 	GetInput("target", "Target account") +
-`</form></div>
+	`</form></div>
 <div class="panel-footer">` +
 	GetButton("Deposit", "transDeposit();", "btn-info") +
 	GetButton("Withdraw", "transWithdraw();", "btn-info") +
 	GetButton("Transfer", "transTransfer();", "btn-info") +
-`</div>
+	`</div>
 </div> 
 {{end}}`
 
@@ -139,5 +139,3 @@ function accountApiQuery(cmd, obj) {
 };
 </script>
 {{end}}`
-
-

@@ -1,6 +1,6 @@
 FROM nginx
 
-MAINTAINER Ivan Rybakov "ivan@ift.com.ua"
+MAINTAINER Ivan Rybakov "rybakov39@gmail.com"
 
 # add nginx conf
 #ADD conf/nginx.conf /etc/nginx/conf.d/default.conf

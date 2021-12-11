@@ -1,6 +1,6 @@
 FROM ubuntu:16.04
 
-MAINTAINER ivan@ift.com.ua
+MAINTAINER Ivan Rybakov "rybakov39@gmail.com"
 
 ENV GOPATH /srv
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH

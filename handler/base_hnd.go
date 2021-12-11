@@ -1,22 +1,23 @@
 package handler
 
 import (
-	"net/http"
-	"io/ioutil"
 	"encoding/json"
-	"fmt"
 	"errors"
+	"fmt"
+	"io/ioutil"
+	"net/http"
 	"net/url"
 	"reflect"
-	"strings"
 	"strconv"
+	"strings"
 )
+
 const (
-	hnd_Method_GET		= "GET"
-	hnd_Method_POST		= "POST"
-	hnd_Method_PUT		= "PUT"
-	hnd_Method_DELETE	= "DELETE"
-	hnd_ErrBadMethod	= "Wrong request method"
+	hnd_Method_GET    = "GET"
+	hnd_Method_POST   = "POST"
+	hnd_Method_PUT    = "PUT"
+	hnd_Method_DELETE = "DELETE"
+	hnd_ErrBadMethod  = "Wrong request method"
 )
 
 ///////////////////////////////////////////////////////////////////////
@@ -25,7 +26,7 @@ type baseHandler struct {
 }
 
 // Marshal to JSON response unit and send it as http reply
-func (this *baseHandler)WriteJsonReply(w http.ResponseWriter, unit interface{}) error {
+func (this *baseHandler) WriteJsonReply(w http.ResponseWriter, unit interface{}) error {
 	body, err := json.Marshal(unit)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -41,17 +42,16 @@ func (this *baseHandler)WriteJsonReply(w http.ResponseWriter, unit interface{}) 
 }
 
 // Send http error to client
-func (this *baseHandler)WriteError(w http.ResponseWriter, text string, code int) error {
+func (this *baseHandler) WriteError(w http.ResponseWriter, text string, code int) error {
 	http.Error(w, text, code)
 	return errors.New(text)
 }
 
 // Parse request query or body to input container
-func (this *baseHandler)AcceptInputQuery(w http.ResponseWriter, r *http.Request, unit interface{}) (err error) {
+func (this *baseHandler) AcceptInputQuery(w http.ResponseWriter, r *http.Request, unit interface{}) (err error) {
 	if r.Method == hnd_Method_GET || r.Method == hnd_Method_DELETE {
 		err = this.readUrlQuery(w, r, unit)
-	} else
-	if r.Method == hnd_Method_POST || r.Method == hnd_Method_PUT {
+	} else if r.Method == hnd_Method_POST || r.Method == hnd_Method_PUT {
 		err = this.readJsonBody(w, r, unit)
 	} else {
 		http.Error(w, hnd_ErrBadMethod, http.StatusBadRequest)
@@ -61,7 +61,7 @@ func (this *baseHandler)AcceptInputQuery(w http.ResponseWriter, r *http.Request,
 }
 
 // Read and parse request body as JSON string
-func (this *baseHandler)readJsonBody(w http.ResponseWriter, r *http.Request, unit interface{}) error {
+func (this *baseHandler) readJsonBody(w http.ResponseWriter, r *http.Request, unit interface{}) error {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -79,7 +79,7 @@ func (this *baseHandler)readJsonBody(w http.ResponseWriter, r *http.Request, uni
 }
 
 // Get and parse request query
-func (this *baseHandler)readUrlQuery(w http.ResponseWriter, r *http.Request, unit interface{}) error {
+func (this *baseHandler) readUrlQuery(w http.ResponseWriter, r *http.Request, unit interface{}) error {
 	fmt.Printf("Http URL query - %+v\n", r.URL.RawQuery)
 	//	Fill input structure using reflect library
 	iterateInputContainer(reflect.ValueOf(unit), r.URL.Query())
@@ -87,7 +87,7 @@ func (this *baseHandler)readUrlQuery(w http.ResponseWriter, r *http.Request, uni
 }
 
 //	Fill input structure using reflect library
-func iterateInputContainer(value reflect.Value, qry url.Values){
+func iterateInputContainer(value reflect.Value, qry url.Values) {
 	if value.Kind() == reflect.Ptr {
 		iterateInputContainer(value.Elem(), qry)
 	}
@@ -147,6 +147,3 @@ func iterateInputContainer(value reflect.Value, qry url.Values){
 		}
 	}
 }
-
-
-

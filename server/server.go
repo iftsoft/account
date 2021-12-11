@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"time"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func Run(port int) error {
@@ -35,6 +35,3 @@ func Run(port int) error {
 	// Finish
 	return nil
 }
-
-
-
